@@ -29,10 +29,26 @@ async function getPlanet(id) {
 }
 
 async function fetchHomeworld(planetID) {
-    const url = `${baseUrl}/planets/${planetID}`;
-    const data = await fetch(url)
-        .then(res => res.json())
-    return data;
+    //Local storage only supports strings.
+    //localStorage.setItem("planets", "[]") // removes local storage for debug only
+    let planetData = {};
+    const planets = JSON.parse(localStorage.getItem("planets") || "[]");
+    const foundLocalMatch = planets.find(pln => pln.id === +planetID);
+
+    // Check if the planet data was saved locally otherwise fetch the api
+    if(foundLocalMatch){
+        planetData = foundLocalMatch;
+    }else{
+        const url = `${baseUrl}/planets/${planetID}`;
+        planetData = await fetch(url)
+            .then(res => res.json())
+        // Push the api data into local storage
+        planets.push(planetData)
+    }
+
+    // Save local data and return the given planet
+    localStorage.setItem("planets", JSON.stringify(planets))
+    return planetData;
 }
 
 const renderPlanet = planet => {
@@ -45,5 +61,4 @@ const renderPlanet = planet => {
     rotationPeriodSpan.textContent = planet?.rotation_period;
     surfaceWaterSpan.textContent = planet?.surface_water;
     terrainSpan.textContent = planet?.terrain;
-  }
-  
+}
