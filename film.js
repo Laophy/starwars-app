@@ -12,8 +12,8 @@ addEventListener('DOMContentLoaded', () => {
   episodeSpan = document.querySelector('span#episode');
   directorSpan = document.querySelector('span#director');
   releasedYearSpan = document.querySelector('span#releasedYear');
-  homeworldSpan = document.querySelector('span#homeworld');
-  filmsUl = document.querySelector('#films>ul');
+  charactersUl = document.querySelector('#characters>ul');
+  planetsUl = document.querySelector('#planets>ul');
   const sp = new URLSearchParams(window.location.search)
   const id = sp.get('id')
   getFilm(id)
@@ -23,11 +23,11 @@ async function getFilm(id) {
   let film;
   try {
     film = await fetchFilm(id)
-    film.homeworld = await fetchHomeworld(film)
-    film.films = await fetchFilms(film)
+    film.characters = await fetchCharacters(film)
+    film.planets = await fetchPlanets(film)
   }
   catch (ex) {
-    console.error(`Error reading character ${id} data.`, ex.message);
+    console.error(`Error reading film ${id} data.`, ex.message);
   }
   renderFilm(film);
 
@@ -38,18 +38,18 @@ async function fetchFilm(id) {
     .then(res => res.json())
 }
 
-async function fetchHomeworld(character) {
-  const url = `${baseUrl}/planets/${character?.homeworld}`;
-  const planet = await fetch(url)
+async function fetchCharacters(film) {
+  const url = `${baseUrl}/films/${film?.episode_id}/characters`;
+  const characters = await fetch(url)
     .then(res => res.json())
-  return planet;
+  return characters;
 }
 
-async function fetchFilms(character) {
-  const url = `${baseUrl}/characters/${character?.id}/films`;
-  const films = await fetch(url)
+async function fetchPlanets(film) {
+  const url = `${baseUrl}/films/${film?.episode_id}/planets`;
+  const planets = await fetch(url)
     .then(res => res.json())
-  return films;
+  return planets;
 }
 
 const renderFilm = film => {
@@ -58,7 +58,8 @@ const renderFilm = film => {
   releasedYearSpan.textContent = film?.release_date;
   directorSpan.textContent = film?.director;
   episodeSpan.textContent = film?.episode_id;
-  homeworldSpan.innerHTML = `<a href="/planet.html?id=${film?.homeworld.id}">${film?.homeworld.name}</a>`;
-  const filmsLis = film?.films?.map(film => `<li><a href="/film.html?id=${film.id}">${film.title}</li>`)
-  filmsUl.innerHTML = filmsLis.join("");
+  const rosterLis = film?.characters?.map(character => `<li><a href="/character.html?id=${character.id}">${character.name}</li>`)
+  charactersUl.innerHTML = rosterLis.join("");
+  const planetsLis = film?.planets?.map(planet => `<li><a href="/planet.html?id=${planet.id}">${planet.name}</li>`)
+  planetsUl.innerHTML = planetsLis.join("");
 }
